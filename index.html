@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>WhatsApp Messenger</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        window.onload = function() {
+            const socket = io();
+
+            socket.on('qr', (url) => {
+                document.getElementById('qrCode').innerHTML = `<img src="${url}" alt="QR Code">`;
+                document.getElementById('messageForm').style.display = 'none';
+            });
+
+            socket.on('ready', () => {
+                document.getElementById('qrCode').style.display = 'none';
+                document.getElementById('messageForm').style.display = 'block';
+            });
+
+            document.getElementById('sendFile').onclick = function() {
+                const file = document.getElementById('file').files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const content = e.target.result;
+                        socket.emit('processCSV', content);
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+            socket.on('messageStatus', (status) => {
+                alert(status);
+            });
+        };
+    </script>
+</head>
+<body>
+    <div id="qrCode">Aguardando QR Code...</div>
+    <div id="messageForm" style="display:none;">
+        <input type="file" id="file" accept=".csv"><br/>
+        <button id="sendFile">Enviar Arquivo</button>
+    </div>
+</body>
+</html>
